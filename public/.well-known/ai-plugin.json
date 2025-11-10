@@ -1,0 +1,21 @@
+{
+  "schema_version": "v1",
+  "name_for_human": "Lucas Digital Twin",
+  "name_for_model": "digital_twin",
+  "description_for_model": "Provides examples and stylistic context for content generation in Lucas's writing and speaking voice. Access samples, query by style, and get style descriptors.",
+  "description_for_human": "Access Lucas's digital twin style guide for AI-powered content generation",
+  "auth": {
+    "type": "api_key",
+    "authorization_type": "custom",
+    "authorization_url": "",
+    "api_key_header": "x-api-key"
+  },
+  "api": {
+    "type": "openapi",
+    "url": "https://yourdomain.com/api/openapi.json",
+    "is_user_authenticated": false
+  },
+  "logo_url": "https://yourdomain.com/logo.png",
+  "contact_email": "support@yourdomain.com",
+  "legal_info_url": "https://yourdomain.com/legal"
+}
