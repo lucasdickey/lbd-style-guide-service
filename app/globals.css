@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-slate-900 text-slate-100;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply inline-flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center gap-2 px-4 py-2 border border-slate-600 hover:border-slate-500 text-slate-300 rounded-lg font-semibold transition;
+  }
+
+  .card {
+    @apply bg-slate-800 border border-slate-700 rounded-lg p-6;
+  }
+
+  .card-hover {
+    @apply card hover:border-slate-600 transition;
+  }
+}
