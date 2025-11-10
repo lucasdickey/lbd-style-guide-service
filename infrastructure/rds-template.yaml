@@ -1,0 +1,117 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'LBD Style Guide Service - RDS PostgreSQL Database'
+
+Parameters:
+  DBInstanceIdentifier:
+    Type: String
+    Default: lbd-style-guide-db
+    Description: The name of the RDS instance
+
+  DBName:
+    Type: String
+    Default: lbd_style_guide
+    Description: The initial database name
+
+  DBUser:
+    Type: String
+    Default: postgres
+    NoEcho: true
+    Description: Master username for the database
+
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: Master password for the database (minimum 8 characters)
+    MinLength: 8
+
+  DBInstanceClass:
+    Type: String
+    Default: db.t3.micro
+    AllowedValues:
+      - db.t3.micro
+      - db.t3.small
+      - db.t3.medium
+      - db.t4g.micro
+      - db.t4g.small
+    Description: The instance type for RDS
+
+  AllocatedStorage:
+    Type: Number
+    Default: 20
+    MinValue: 20
+    MaxValue: 65536
+    Description: Allocated storage in GB
+
+Resources:
+  # Security Group for RDS
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for LBD Style Guide RDS
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          CidrIp: 0.0.0.0/0
+          Description: PostgreSQL access from anywhere
+
+  # RDS Database Instance
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Ref DBInstanceIdentifier
+      Engine: postgres
+      EngineVersion: '15.3'
+      DBInstanceClass: !Ref DBInstanceClass
+      AllocatedStorage: !Ref AllocatedStorage
+      StorageType: gp3
+      StorageEncrypted: true
+      MasterUsername: !Ref DBUser
+      MasterUserPassword: !Ref DBPassword
+      DBName: !Ref DBName
+      VPCSecurityGroups:
+        - !GetAtt DBSecurityGroup.GroupId
+      BackupRetentionPeriod: 7
+      MultiAZ: false
+      PubliclyAccessible: true
+      EnableCloudwatchLogsExports:
+        - postgresql
+      EnableIAMDatabaseAuthentication: true
+      DeletionProtection: false
+      Tags:
+        - Key: Name
+          Value: lbd-style-guide-db
+        - Key: Project
+          Value: LBD-Style-Guide
+
+Outputs:
+  DatabaseEndpoint:
+    Description: The endpoint for the RDS database
+    Value: !GetAtt DBInstance.Endpoint.Address
+    Export:
+      Name: !Sub '${AWS::StackName}-DBEndpoint'
+
+  DatabasePort:
+    Description: The port for the RDS database
+    Value: !GetAtt DBInstance.Endpoint.Port
+    Export:
+      Name: !Sub '${AWS::StackName}-DBPort'
+
+  DatabaseName:
+    Description: The database name
+    Value: !Ref DBName
+    Export:
+      Name: !Sub '${AWS::StackName}-DBName'
+
+  DatabaseUser:
+    Description: The master username
+    Value: !Ref DBUser
+    Export:
+      Name: !Sub '${AWS::StackName}-DBUser'
+
+  ConnectionString:
+    Description: PostgreSQL connection string
+    Value: !Sub 'postgresql://${DBUser}:PASSWORD@${DBInstance.Endpoint.Address}:${DBInstance.Endpoint.Port}/${DBName}'
+    Export:
+      Name: !Sub '${AWS::StackName}-ConnectionString'
