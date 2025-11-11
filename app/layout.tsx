@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
-import './globals.css'
 
 export const metadata: Metadata = {
   title: 'LBD Style Guide Service',
   description: 'A server-accessible representation of writing and speaking patterns for LLM conditioning',
 }
+
+// Import globals CSS as a side effect
+import './globals.css'
 
 export default function RootLayout({
   children,
@@ -12,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body>{children}</body>
     </html>
   )
