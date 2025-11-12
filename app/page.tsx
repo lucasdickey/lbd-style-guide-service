@@ -1,4 +1,40 @@
+'use client'
+
+import { useState } from 'react'
+
 export default function Home() {
+  const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
+
+  const copyToClipboard = (text: string, index: number) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 2000)
+    })
+  }
+
+  const claudeDesktopConfig = JSON.stringify({
+    "lbd-style-guide": {
+      "command": "curl",
+      "args": ["-X", "POST", "http://localhost:3010/api/twin/mcp", "-H", "Content-Type: application/json"]
+    }
+  }, null, 2)
+
+  const claudeCodeConfig = JSON.stringify({
+    "lbd-style-guide": {
+      "command": "curl",
+      "args": ["-X", "POST", "http://localhost:3010/api/twin/mcp", "-H", "Content-Type: application/json"]
+    }
+  }, null, 2)
+
+  const cursorConfig = JSON.stringify({
+    "lbd-style-guide": {
+      "command": "curl",
+      "args": ["-X", "POST", "http://localhost:3010/api/twin/mcp", "-H", "Content-Type: application/json"]
+    }
+  }, null, 2)
+
+  const notionConfig = "MCP Server: lbd-style-guide\nEndpoint: http://localhost:3010/api/twin/mcp\nMethod: POST\nHeaders: Content-Type: application/json"
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
@@ -81,44 +117,78 @@ export default function Home() {
 
               {/* Integration Instructions */}
               <div className="space-y-4">
-                <div className="bg-slate-900/50 border border-slate-700 rounded p-4">
-                  <h3 className="text-sm font-semibold text-white mb-2">Server Configuration</h3>
-                  <p className="text-sm text-slate-300 mb-2">Add this MCP configuration to your tool:</p>
-                  <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto">
-                    {JSON.stringify({
-                      "lbd-style-guide": {
-                        "command": "curl",
-                        "args": [
-                          "-X", "POST",
-                          "http://localhost:3010/api/twin/mcp",
-                          "-H", "Content-Type: application/json"
-                        ]
-                      }
-                    }, null, 2)}
-                  </code>
-                </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                  <div className="bg-slate-900/50 border border-slate-700 rounded p-3">
-                    <p className="font-semibold text-green-400 mb-1">Claude Desktop</p>
-                    <p className="text-slate-400">Add to <code className="text-slate-300 bg-slate-950 px-1 rounded">claude_desktop_config.json</code></p>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-700 rounded p-3">
-                    <p className="font-semibold text-green-400 mb-1">Claude Code</p>
-                    <p className="text-slate-400">Configure MCP servers in your workspace settings</p>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-700 rounded p-3">
-                    <p className="font-semibold text-green-400 mb-1">Cursor</p>
-                    <p className="text-slate-400">Use Cursor Settings → Features → MCP to add this server</p>
-                  </div>
-                  <div className="bg-slate-900/50 border border-slate-700 rounded p-3">
-                    <p className="font-semibold text-green-400 mb-1">Notion AI</p>
-                    <p className="text-slate-400">Configure custom AI tools in Notion workspace settings</p>
-                  </div>
+                  {/* Claude Desktop */}
+                  <button
+                    onClick={() => copyToClipboard(claudeDesktopConfig, 0)}
+                    className="bg-slate-900/50 border border-slate-700 hover:border-green-500 rounded p-4 text-left transition group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-semibold text-green-400">Claude Desktop</p>
+                      <span className="text-xl group-hover:scale-110 transition">
+                        {copiedIndex === 0 ? '✓' : '📋'}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-2">Copy config for <code className="text-slate-300 bg-slate-950 px-1 rounded">claude_desktop_config.json</code></p>
+                    <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
+                      {claudeDesktopConfig}
+                    </code>
+                  </button>
+
+                  {/* Claude Code */}
+                  <button
+                    onClick={() => copyToClipboard(claudeCodeConfig, 1)}
+                    className="bg-slate-900/50 border border-slate-700 hover:border-green-500 rounded p-4 text-left transition group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-semibold text-green-400">Claude Code</p>
+                      <span className="text-xl group-hover:scale-110 transition">
+                        {copiedIndex === 1 ? '✓' : '📋'}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-2">Copy config for workspace settings</p>
+                    <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
+                      {claudeCodeConfig}
+                    </code>
+                  </button>
+
+                  {/* Cursor */}
+                  <button
+                    onClick={() => copyToClipboard(cursorConfig, 2)}
+                    className="bg-slate-900/50 border border-slate-700 hover:border-green-500 rounded p-4 text-left transition group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-semibold text-green-400">Cursor</p>
+                      <span className="text-xl group-hover:scale-110 transition">
+                        {copiedIndex === 2 ? '✓' : '📋'}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-2">Copy config for Settings → Features → MCP</p>
+                    <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
+                      {cursorConfig}
+                    </code>
+                  </button>
+
+                  {/* Notion AI */}
+                  <button
+                    onClick={() => copyToClipboard(notionConfig, 3)}
+                    className="bg-slate-900/50 border border-slate-700 hover:border-green-500 rounded p-4 text-left transition group"
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <p className="font-semibold text-green-400">Notion AI</p>
+                      <span className="text-xl group-hover:scale-110 transition">
+                        {copiedIndex === 3 ? '✓' : '📋'}
+                      </span>
+                    </div>
+                    <p className="text-slate-400 text-xs mb-2">Copy config for custom AI tools</p>
+                    <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
+                      {notionConfig}
+                    </code>
+                  </button>
                 </div>
 
                 <a
-                  href="/mcp-setup"
+                  href="/README.md"
                   className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition"
                 >
                   View Full Setup Guide
