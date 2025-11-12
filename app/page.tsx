@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { UploadIcon, DocumentationIcon, LinkIcon, CopyIcon, CheckIcon, ArrowIcon } from '@/components/Icons'
 
 export default function Home() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)
@@ -66,7 +67,7 @@ export default function Home() {
                     Add text, audio, video, and image samples to build your style guide.
                   </p>
                 </div>
-                <div className="text-4xl">📤</div>
+                <UploadIcon className="w-8 h-8 text-slate-400" />
               </div>
               <a
                 href="/dashboard"
@@ -89,7 +90,7 @@ export default function Home() {
                     Query the style guide via REST API endpoints.
                   </p>
                 </div>
-                <div className="text-4xl">📚</div>
+                <DocumentationIcon className="w-8 h-8 text-slate-400" />
               </div>
               <a
                 href="/api/docs"
@@ -112,7 +113,7 @@ export default function Home() {
                     Connect this service as a Model Context Protocol (MCP) server in your favorite tools.
                   </p>
                 </div>
-                <div className="text-4xl">🔗</div>
+                <LinkIcon className="w-8 h-8 text-slate-400" />
               </div>
 
               {/* Integration Instructions */}
@@ -125,9 +126,11 @@ export default function Home() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <p className="font-semibold text-green-400">Claude Desktop</p>
-                      <span className="text-xl group-hover:scale-110 transition">
-                        {copiedIndex === 0 ? '✓' : '📋'}
-                      </span>
+                      {copiedIndex === 0 ? (
+                        <CheckIcon className="w-5 h-5 text-green-400 group-hover:scale-110 transition" />
+                      ) : (
+                        <CopyIcon className="w-5 h-5 text-slate-400 group-hover:scale-110 group-hover:text-slate-300 transition" />
+                      )}
                     </div>
                     <p className="text-slate-400 text-xs mb-2">Copy config for <code className="text-slate-300 bg-slate-950 px-1 rounded">claude_desktop_config.json</code></p>
                     <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
@@ -142,9 +145,11 @@ export default function Home() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <p className="font-semibold text-green-400">Claude Code</p>
-                      <span className="text-xl group-hover:scale-110 transition">
-                        {copiedIndex === 1 ? '✓' : '📋'}
-                      </span>
+                      {copiedIndex === 1 ? (
+                        <CheckIcon className="w-5 h-5 text-green-400 group-hover:scale-110 transition" />
+                      ) : (
+                        <CopyIcon className="w-5 h-5 text-slate-400 group-hover:scale-110 group-hover:text-slate-300 transition" />
+                      )}
                     </div>
                     <p className="text-slate-400 text-xs mb-2">Copy config for workspace settings</p>
                     <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
@@ -159,9 +164,11 @@ export default function Home() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <p className="font-semibold text-green-400">Cursor</p>
-                      <span className="text-xl group-hover:scale-110 transition">
-                        {copiedIndex === 2 ? '✓' : '📋'}
-                      </span>
+                      {copiedIndex === 2 ? (
+                        <CheckIcon className="w-5 h-5 text-green-400 group-hover:scale-110 transition" />
+                      ) : (
+                        <CopyIcon className="w-5 h-5 text-slate-400 group-hover:scale-110 group-hover:text-slate-300 transition" />
+                      )}
                     </div>
                     <p className="text-slate-400 text-xs mb-2">Copy config for Settings → Features → MCP</p>
                     <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
@@ -176,9 +183,11 @@ export default function Home() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <p className="font-semibold text-green-400">Notion AI</p>
-                      <span className="text-xl group-hover:scale-110 transition">
-                        {copiedIndex === 3 ? '✓' : '📋'}
-                      </span>
+                      {copiedIndex === 3 ? (
+                        <CheckIcon className="w-5 h-5 text-green-400 group-hover:scale-110 transition" />
+                      ) : (
+                        <CopyIcon className="w-5 h-5 text-slate-400 group-hover:scale-110 group-hover:text-slate-300 transition" />
+                      )}
                     </div>
                     <p className="text-slate-400 text-xs mb-2">Copy config for custom AI tools</p>
                     <code className="block bg-slate-950 p-2 rounded text-xs text-slate-300 overflow-auto max-h-24">
