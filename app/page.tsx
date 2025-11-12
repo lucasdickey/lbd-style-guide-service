@@ -40,12 +40,12 @@ export default function Home() {
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
       <div className="border-b border-slate-700 bg-slate-800/50 backdrop-blur">
-        <div className="max-w-6xl mx-auto px-6 py-12">
-          <div className="flex items-center gap-3 mb-3">
+        <div className="max-w-6xl mx-auto px-6 py-8">
+          <div className="flex items-center gap-3 mb-2">
             <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
             <span className="text-purple-400 text-sm font-semibold uppercase tracking-wider">Digital Twin</span>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-3">LBD Style Guide Service</h1>
+          <h1 className="text-4xl font-bold text-white mb-2">LBD Style Guide Service</h1>
           <p className="text-lg text-slate-300 max-w-2xl">
             A digital twin server endpoint for accessing stylistic patterns and tone descriptors via REST API and MCP.
           </p>
