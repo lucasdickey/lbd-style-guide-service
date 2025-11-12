@@ -45,8 +45,8 @@ export default function Home() {
             <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
             <span className="text-purple-400 text-sm font-semibold uppercase tracking-wider">Digital Twin</span>
           </div>
-          <h1 className="text-5xl font-bold text-white mb-3">LBD Style Guide Service</h1>
-          <p className="text-xl text-slate-300 max-w-2xl">
+          <h1 className="text-4xl font-bold text-white mb-3">LBD Style Guide Service</h1>
+          <p className="text-lg text-slate-300 max-w-2xl">
             A digital twin server endpoint for accessing stylistic patterns and tone descriptors via REST API and MCP.
           </p>
         </div>
@@ -62,7 +62,7 @@ export default function Home() {
             <div className="relative bg-slate-800 border border-slate-700 hover:border-purple-500 rounded-lg p-8 transition">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">Upload Samples</h2>
+                  <h2 className="text-xl font-bold text-white mb-2">Upload Samples</h2>
                   <p className="text-slate-400">
                     Add text, audio, video, and image samples to build your style guide.
                   </p>
@@ -85,7 +85,7 @@ export default function Home() {
             <div className="relative bg-slate-800 border border-slate-700 hover:border-blue-500 rounded-lg p-8 transition">
               <div className="flex items-start justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">API Documentation</h2>
+                  <h2 className="text-xl font-bold text-white mb-2">API Documentation</h2>
                   <p className="text-slate-400">
                     Query the style guide via REST API endpoints.
                   </p>
@@ -108,7 +108,7 @@ export default function Home() {
             <div className="relative bg-slate-800 border border-slate-700 hover:border-green-500 rounded-lg p-8 transition">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-white mb-2">MCP Integration</h2>
+                  <h2 className="text-xl font-bold text-white mb-2">MCP Integration</h2>
                   <p className="text-slate-400">
                     Connect this service as a Model Context Protocol (MCP) server in your favorite tools.
                   </p>
