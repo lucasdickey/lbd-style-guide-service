@@ -208,44 +208,14 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Footer Info */}
-        <div className="mt-16 pt-8 border-t border-slate-700">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div>
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Learn More</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li><a href="/README.md" className="hover:text-slate-200 transition">Documentation</a></li>
-                <li><a href="https://github.com/lucasdickey/lbd-style-guide-service" className="hover:text-slate-200 transition">GitHub</a></li>
-                <li><a href="/PLAN.md" className="hover:text-slate-200 transition">Architecture</a></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Built With</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>Next.js 16</li>
-                <li>PostgreSQL + pgvector</li>
-                <li>AWS (S3, RDS)</li>
-                <li>OpenAI Embeddings</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-3">Capabilities</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>Semantic Search</li>
-                <li>Multimodal Samples</li>
-                <li>Style Analysis</li>
-                <li>MCP Protocol</li>
-              </ul>
-            </div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-slate-700 flex items-center justify-between">
-            <p className="text-slate-500 text-sm">
-              LBD Style Guide Service v1.0
-            </p>
-            <div className="flex items-center gap-2 text-slate-500 text-sm">
-              <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-              Service Status: Operational
-            </div>
+        {/* Footer Status */}
+        <div className="mt-16 pt-8 border-t border-slate-700 flex items-center justify-between">
+          <p className="text-slate-500 text-sm">
+            LBD Style Guide Service v1.0
+          </p>
+          <div className="flex items-center gap-2 text-slate-500 text-sm">
+            <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+            Service Status: Operational
           </div>
         </div>
       </div>
