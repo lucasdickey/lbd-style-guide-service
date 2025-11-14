@@ -1,9 +1,9 @@
 /**
  * Database migration to add modes column to samples table
- * Run with: npx ts-node scripts/migrate-add-modes.ts
+ * Run with: npm run db:migrate
  */
 
-import { Pool } from 'pg'
+const { Pool } = require('pg')
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
