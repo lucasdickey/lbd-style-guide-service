@@ -28,15 +28,19 @@ export default function LoginPage() {
         redirect: 'manual', // Don't follow redirects automatically
       })
 
+      console.log('Login response status:', response.status)
+
       // If we get a 307 or 308, the middleware passed and redirected us
       if (response.status === 307 || response.status === 308 || response.ok) {
         setLoading(false)
         router.push('/dashboard')
       } else {
+        console.log('Login failed with status:', response.status)
         setError('Invalid username or password')
         setLoading(false)
       }
     } catch (err) {
+      console.error('Login error:', err)
       setError('An error occurred. Please try again.')
       setLoading(false)
     }
