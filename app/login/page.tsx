@@ -10,18 +10,35 @@ export default function LoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setError('')
     setLoading(true)
 
-    // Encode credentials in base64 for Basic Auth
-    const credentials = btoa(`${username}:${password}`)
+    try {
+      // Encode credentials in base64 for Basic Auth
+      const credentials = btoa(`${username}:${password}`)
 
-    // Store credentials in sessionStorage for the dashboard page to use
-    sessionStorage.setItem('dashboardAuth', credentials)
+      // Make a request to /dashboard with the Authorization header to trigger middleware validation
+      const response = await fetch('/dashboard', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Basic ${credentials}`,
+        },
+        redirect: 'manual', // Don't follow redirects automatically
+      })
 
-    router.push('/dashboard')
+      // If we get a 307 or 308, the middleware passed and redirected us
+      if (response.status === 307 || response.status === 308 || response.ok) {
+        router.push('/dashboard')
+      } else {
+        setError('Invalid username or password')
+        setLoading(false)
+      }
+    } catch (err) {
+      setError('An error occurred. Please try again.')
+      setLoading(false)
+    }
   }
 
   return (
@@ -40,9 +57,9 @@ export default function LoginPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="admin"
+              placeholder="Enter your username"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder:text-gray-500"
             />
           </div>
 
@@ -56,9 +73,9 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="Enter your password"
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder:text-gray-500"
             />
           </div>
 
@@ -78,14 +95,6 @@ export default function LoginPage() {
             {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
-
-        {/* Info */}
-        <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-sm text-gray-600">
-          <p className="font-semibold mb-1">Demo Credentials:</p>
-          <p>Username: <code className="bg-gray-100 px-1 rounded">admin</code></p>
-          <p>Password: <code className="bg-gray-100 px-1 rounded">change-me</code></p>
-          <p className="mt-2 text-xs italic">Change these in your environment variables.</p>
-        </div>
 
         {/* Back Link */}
         <div className="mt-6 text-center">
