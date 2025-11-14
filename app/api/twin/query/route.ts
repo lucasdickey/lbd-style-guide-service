@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Build the query
     let sqlQuery = `
       SELECT
-        id, user_id, type, url, context, tags, created_at,
+        id, user_id, type, url, context, tags, modes, created_at,
         1 - (embedding_vector <=> $1::vector) as similarity
       FROM samples
       WHERE embedding_vector IS NOT NULL
@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       url: row.url,
       context: row.context,
       tags: row.tags,
+      modes: row.modes,
       similarity: parseFloat(row.similarity).toFixed(3),
       created_at: row.created_at,
     }))

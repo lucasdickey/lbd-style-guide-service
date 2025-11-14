@@ -3,6 +3,7 @@
  */
 
 export type SampleType = 'text' | 'audio' | 'video' | 'image'
+export type ContentMode = 'Personal Blog' | 'Work Blog' | 'LinkedIn' | 'Twitter' | 'Email'
 
 export interface UserProfile {
   id: string
@@ -21,6 +22,7 @@ export interface Sample {
   url: string
   context?: string
   tags: string[]
+  modes?: ContentMode[]
   embedding_vector?: number[]
   created_at: string
   updated_at: string
@@ -45,6 +47,7 @@ export interface UploadSampleRequest {
   content?: string
   file?: Buffer
   tags?: string[]
+  modes?: ContentMode[]
 }
 
 export interface QueryRequest {

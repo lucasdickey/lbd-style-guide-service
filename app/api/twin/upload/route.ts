@@ -30,6 +30,7 @@ export async function POST(request: NextRequest) {
         type: (formData.get('type') as string) as any,
         context: formData.get('context') as string,
         tags: JSON.parse((formData.get('tags') as string) || '[]'),
+        modes: JSON.parse((formData.get('modes') as string) || '[]'),
         file: formData.get('file') as any,
       }
     } else {
@@ -86,10 +87,10 @@ export async function POST(request: NextRequest) {
 
     // Insert sample into database
     const sampleResult = await query(
-      `INSERT INTO samples (user_id, type, url, context, tags, embedding_vector)
-       VALUES ($1, $2, $3, $4, $5, $6)
+      `INSERT INTO samples (user_id, type, url, context, tags, modes, embedding_vector)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [userId, sampleData.type, fileUrl, sampleData.context || null, sampleData.tags || [], embeddingVector ? JSON.stringify(embeddingVector) : null]
+      [userId, sampleData.type, fileUrl, sampleData.context || null, sampleData.tags || [], sampleData.modes || [], embeddingVector ? JSON.stringify(embeddingVector) : null]
     )
 
     const sample = sampleResult.rows[0]
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest) {
         type: sample.type,
         url: sample.url,
         tags: sample.tags,
+        modes: sample.modes,
       },
     })
   } catch (error) {

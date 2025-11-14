@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const userId = process.env.DEFAULT_USER_ID || '00000000-0000-0000-0000-000000000000'
 
     // Build the query
-    let sqlQuery = 'SELECT id, type, url, context, tags, created_at FROM samples WHERE user_id = $1'
+    let sqlQuery = 'SELECT id, type, url, context, tags, modes, created_at FROM samples WHERE user_id = $1'
     const params: any[] = [userId]
 
     // Filter by type if specified
@@ -59,6 +59,7 @@ export async function GET(request: NextRequest) {
         url: row.url,
         context: row.context,
         tags: row.tags,
+        modes: row.modes,
         created_at: row.created_at,
       })),
       pagination: {

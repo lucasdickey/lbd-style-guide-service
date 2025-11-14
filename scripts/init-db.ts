@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS samples (
   url TEXT NOT NULL,
   context TEXT,
   tags TEXT[] DEFAULT '{}',
+  modes TEXT[] DEFAULT '{}',
   embedding_vector vector(1536),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
