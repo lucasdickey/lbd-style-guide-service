@@ -30,6 +30,7 @@ export default function LoginPage() {
 
       // If we get a 307 or 308, the middleware passed and redirected us
       if (response.status === 307 || response.status === 308 || response.ok) {
+        setLoading(false)
         router.push('/dashboard')
       } else {
         setError('Invalid username or password')
