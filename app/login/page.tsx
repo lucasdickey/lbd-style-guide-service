@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Cookies from 'js-cookie'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -35,11 +34,7 @@ export default function LoginPage() {
       if (response.status === 307 || response.status === 308 || response.ok) {
         console.log('Login successful, storing credentials and navigating to dashboard')
         // Store credentials in cookie for subsequent requests
-        Cookies.set('auth', credentials, {
-          path: '/',
-          secure: true,
-          sameSite: 'strict'
-        })
+        document.cookie = `auth=${credentials}; path=/; secure; samesite=strict`
         setLoading(false)
         router.push('/dashboard')
       } else {
