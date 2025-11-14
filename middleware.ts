@@ -3,7 +3,15 @@ import { NextRequest, NextResponse } from 'next/server'
 export function middleware(request: NextRequest) {
   // Only protect the dashboard route
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
-    const authHeader = request.headers.get('authorization')
+    let authHeader = request.headers.get('authorization')
+
+    // If no auth header, try to get credentials from cookie
+    if (!authHeader) {
+      const authCookie = request.cookies.get('auth')?.value
+      if (authCookie) {
+        authHeader = `Basic ${authCookie}`
+      }
+    }
 
     // Check if auth header exists
     if (!authHeader) {
