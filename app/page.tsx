@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { UploadIcon, DocumentationIcon, LinkIcon, CopyIcon, CheckIcon, ArrowIcon } from '@/components/Icons'
+import { UploadIcon, DocumentationIcon, LinkIcon, CopyIcon, CheckIcon } from '@/components/Icons'
 
 export default function Home() {
   const [copiedIndex, setCopiedIndex] = useState<number | null>(null)

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // Parse request body
     const contentType = request.headers.get('content-type') || ''
 
-    let sampleData: UploadSampleRequest & { user_id?: string } = {}
+    let sampleData: Partial<UploadSampleRequest & { user_id?: string }> = {}
 
     if (contentType.includes('application/json')) {
       sampleData = await request.json()
