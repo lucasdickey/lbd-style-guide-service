@@ -1,13 +1,13 @@
 /**
- * Database initialization script
- * Run with: npm run db:init
+ * POST /api/admin/init-db
+ * Initialize the database schema (admin-only endpoint)
+ *
+ * This endpoint requires a special initialization token for security
+ * Usage: POST /api/admin/init-db with header: x-init-token: <INIT_TOKEN>
  */
 
-const { Pool } = require('pg')
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-})
+import { NextRequest, NextResponse } from 'next/server'
+import { Pool } from 'pg'
 
 const schema = `
 -- Enable vector extension for pgvector
@@ -62,22 +62,56 @@ CREATE INDEX IF NOT EXISTS idx_metadata_sample_id ON metadata(sample_id);
 CREATE INDEX IF NOT EXISTS idx_samples_embedding ON samples USING ivfflat (embedding_vector vector_cosine_ops);
 `
 
-async function initializeDatabase() {
-  const client = await pool.connect()
+export async function POST(request: NextRequest) {
   try {
-    console.log('Initializing database schema...')
-    await client.query(schema)
-    console.log('✓ Database schema initialized successfully')
+    // Validate initialization token
+    const initToken = request.headers.get('x-init-token')
+    const expectedToken = process.env.DB_INIT_TOKEN
+
+    if (!expectedToken || !initToken || initToken !== expectedToken) {
+      return NextResponse.json(
+        { error: 'Unauthorized: Invalid or missing initialization token' },
+        { status: 401 }
+      )
+    }
+
+    // Check if DATABASE_URL is available
+    const databaseUrl = process.env.DATABASE_URL
+    if (!databaseUrl) {
+      return NextResponse.json(
+        { error: 'DATABASE_URL environment variable not configured' },
+        { status: 500 }
+      )
+    }
+
+    // Create a connection pool
+    const pool = new Pool({
+      connectionString: databaseUrl,
+    })
+
+    // Connect and initialize schema
+    const client = await pool.connect()
+    try {
+      console.log('Initializing database schema...')
+      await client.query(schema)
+      console.log('✓ Database schema initialized successfully')
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Database schema initialized successfully',
+      })
+    } finally {
+      client.release()
+      await pool.end()
+    }
   } catch (error) {
-    console.error('✗ Error initializing database:', error)
-    throw error
-  } finally {
-    client.release()
-    await pool.end()
+    console.error('Database initialization error:', error)
+    return NextResponse.json(
+      {
+        error: 'Failed to initialize database',
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    )
   }
 }
-
-initializeDatabase().catch((error) => {
-  console.error('Fatal error:', error)
-  process.exit(1)
-})
