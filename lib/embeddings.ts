@@ -6,7 +6,6 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
 
 const EMBEDDING_MODEL = 'amazon.titan-embed-text-v2:0'
-const EMBEDDING_DIMENSION = 1536
 
 let bedrockClient: BedrockRuntimeClient | null = null
 
