@@ -1,68 +1,73 @@
 /**
  * Embeddings utility functions for generating semantic vectors
- * Uses OpenAI's text-embedding-3-small model
+ * Uses AWS Bedrock Titan Embedding V2 model
  */
 
-const EMBEDDING_MODEL = 'text-embedding-3-small'
+import { BedrockRuntimeClient, InvokeModelCommand } from '@aws-sdk/client-bedrock-runtime'
+
+const EMBEDDING_MODEL = 'amazon.titan-embed-text-v2:0'
+const EMBEDDING_DIMENSION = 1536
+
+let bedrockClient: BedrockRuntimeClient | null = null
+
+function getBedrockClient(): BedrockRuntimeClient {
+  if (!bedrockClient) {
+    bedrockClient = new BedrockRuntimeClient({
+      region: process.env.AWS_REGION || 'us-east-1',
+    })
+  }
+  return bedrockClient
+}
 
 export async function generateEmbedding(text: string): Promise<number[]> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured')
+  if (!process.env.AWS_REGION) {
+    throw new Error('AWS_REGION not configured')
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+    const client = getBedrockClient()
+    const command = new InvokeModelCommand({
+      modelId: EMBEDDING_MODEL,
       body: JSON.stringify({
-        input: text,
-        model: EMBEDDING_MODEL,
+        inputText: text,
       }),
     })
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(`OpenAI API error: ${error.error?.message}`)
-    }
-
-    const data = await response.json()
-    return data.data[0].embedding
+    const response = await client.send(command)
+    const responseBody = JSON.parse(new TextDecoder().decode(response.body))
+    return responseBody.embedding
   } catch (error) {
-    console.error('Error generating embedding:', error)
+    console.error('Error generating embedding with Bedrock:', error)
     throw error
   }
 }
 
 export async function generateEmbeddings(texts: string[]): Promise<number[][]> {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY not configured')
+  if (!process.env.AWS_REGION) {
+    throw new Error('AWS_REGION not configured')
   }
 
   try {
-    const response = await fetch('https://api.openai.com/v1/embeddings', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        input: texts,
-        model: EMBEDDING_MODEL,
-      }),
-    })
+    const client = getBedrockClient()
+    const embeddings: number[][] = []
 
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(`OpenAI API error: ${error.error?.message}`)
+    // Process texts sequentially to avoid rate limiting
+    for (const text of texts) {
+      const command = new InvokeModelCommand({
+        modelId: EMBEDDING_MODEL,
+        body: JSON.stringify({
+          inputText: text,
+        }),
+      })
+
+      const response = await client.send(command)
+      const responseBody = JSON.parse(new TextDecoder().decode(response.body))
+      embeddings.push(responseBody.embedding)
     }
 
-    const data = await response.json()
-    return data.data.map((item: any) => item.embedding)
+    return embeddings
   } catch (error) {
-    console.error('Error generating embeddings:', error)
+    console.error('Error generating embeddings with Bedrock:', error)
     throw error
   }
 }
