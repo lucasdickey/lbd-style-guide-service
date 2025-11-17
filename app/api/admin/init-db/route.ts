@@ -64,13 +64,27 @@ CREATE INDEX IF NOT EXISTS idx_samples_embedding ON samples USING ivfflat (embed
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate initialization token
-    const initToken = request.headers.get('x-init-token')
+    // Validate initialization token - accept from header or query parameter
+    const headerToken = request.headers.get('x-init-token')
+    const { searchParams } = new URL(request.url)
+    const queryToken = searchParams.get('token')
+    const initToken = headerToken || queryToken
     const expectedToken = process.env.DB_INIT_TOKEN
+
+    console.log('Token validation:', {
+      headerToken: headerToken ? '***' : 'missing',
+      queryToken: queryToken ? '***' : 'missing',
+      expectedToken: expectedToken ? '***' : 'missing',
+      match: initToken === expectedToken
+    })
 
     if (!expectedToken || !initToken || initToken !== expectedToken) {
       return NextResponse.json(
-        { error: 'Unauthorized: Invalid or missing initialization token' },
+        {
+          error: 'Unauthorized: Invalid or missing initialization token',
+          hasExpectedToken: !!expectedToken,
+          hasInitToken: !!initToken
+        },
         { status: 401 }
       )
     }
