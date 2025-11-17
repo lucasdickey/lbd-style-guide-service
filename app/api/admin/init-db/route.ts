@@ -98,9 +98,12 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create a connection pool
+    // Create a connection pool with SSL support
     const pool = new Pool({
       connectionString: databaseUrl,
+      ssl: {
+        rejectUnauthorized: false, // Accept self-signed certificates
+      },
     })
 
     // Connect and initialize schema
