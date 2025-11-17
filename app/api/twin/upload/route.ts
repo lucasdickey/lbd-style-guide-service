@@ -54,8 +54,13 @@ export async function POST(request: NextRequest) {
         return createBadRequestResponse('Missing required field for text: content')
       }
 
-      // Generate embedding for text content
-      embeddingVector = await generateEmbedding(sampleData.content)
+      // Generate embedding for text content (optional - skip if error)
+      try {
+        embeddingVector = await generateEmbedding(sampleData.content)
+      } catch (err) {
+        console.warn('Warning: Failed to generate embedding, continuing without it:', err)
+        // Continue without embedding
+      }
 
       // Optionally upload text to S3
       const key = `samples/text/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.txt`
@@ -75,9 +80,14 @@ export async function POST(request: NextRequest) {
       const key = `samples/${sampleData.type}/${Date.now()}-${Math.random().toString(36).substr(2, 9)}.${ext}`
       fileUrl = await uploadFile(key, sampleData.file as any, contentTypeMap[sampleData.type] || 'application/octet-stream')
 
-      // For now, we'll generate embedding from context/description instead of transcribing
+      // For now, we'll generate embedding from context/description instead of transcribing (optional - skip if error)
       if (sampleData.context) {
-        embeddingVector = await generateEmbedding(sampleData.context)
+        try {
+          embeddingVector = await generateEmbedding(sampleData.context)
+        } catch (err) {
+          console.warn('Warning: Failed to generate embedding, continuing without it:', err)
+          // Continue without embedding
+        }
       }
     }
 
