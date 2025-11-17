@@ -16,6 +16,9 @@ export async function initDB() {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
+    ssl: {
+      rejectUnauthorized: false, // Accept self-signed certificates from RDS
+    },
   })
 
   pool.on('error', (err: Error) => {
