@@ -98,7 +98,36 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Create a connection pool with SSL support
+    // First, create the database if it doesn't exist
+    // Connect to the default 'postgres' database to create our database
+    const createDbUrl = databaseUrl.replace('/lbd_style_guide', '/postgres')
+    const adminPool = new Pool({
+      connectionString: createDbUrl,
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
+
+    const adminClient = await adminPool.connect()
+    try {
+      console.log('Creating database if it does not exist...')
+      try {
+        await adminClient.query('CREATE DATABASE lbd_style_guide')
+        console.log('✓ Database created')
+      } catch (err) {
+        // Database might already exist, which is fine
+        if (err instanceof Error && err.message.includes('already exists')) {
+          console.log('✓ Database already exists')
+        } else {
+          throw err
+        }
+      }
+    } finally {
+      adminClient.release()
+      await adminPool.end()
+    }
+
+    // Now connect to our actual database and initialize schema
     const pool = new Pool({
       connectionString: databaseUrl,
       ssl: {
