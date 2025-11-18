@@ -14,8 +14,12 @@ export async function initDB() {
   // Parse the DATABASE_URL and ensure SSL is properly configured
   const dbUrl = process.env.DATABASE_URL
 
+  // Remove SSL parameters from connection string to avoid conflicts
+  // Let the ssl config object handle it instead
+  const cleanUrl = dbUrl?.replace(/\?sslmode=.*/, '') || ''
+
   pool = new Pool({
-    connectionString: dbUrl,
+    connectionString: cleanUrl,
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
