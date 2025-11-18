@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
         console.warn('Warning dropping column:', err)
       }
 
-      // Step 3: Add new column with correct dimensions
-      console.log('Adding new embedding_vector column with 1536 dimensions...')
-      await client.query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1536)')
+      // Step 3: Add new column with correct dimensions (Titan Embedding V2 returns 1024 dimensions)
+      console.log('Adding new embedding_vector column with 1024 dimensions...')
+      await client.query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1024)')
       console.log('New column added')
 
       // Step 4: Recreate the index
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
 
       return NextResponse.json({
         status: 'success',
-        message: 'Embedding vector dimensions updated to 1536',
+        message: 'Embedding vector column migrated successfully (using 1024 dimensions for Titan Embedding V2)',
       })
     } finally {
       client.release()

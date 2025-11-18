@@ -33,7 +33,7 @@ CREATE TABLE IF NOT EXISTS samples (
   context TEXT,
   tags TEXT[] DEFAULT '{}',
   modes TEXT[] DEFAULT '{}',
-  embedding_vector vector(1536),
+  embedding_vector vector(1024),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
