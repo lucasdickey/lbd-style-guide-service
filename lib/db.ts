@@ -19,12 +19,9 @@ export async function initDB() {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-    // Only apply SSL config if not already in the connection string
-    ...(dbUrl && !dbUrl.includes('sslmode') ? {
-      ssl: {
-        rejectUnauthorized: false,
-      }
-    } : {}),
+    ssl: {
+      rejectUnauthorized: false, // Always accept self-signed certificates from RDS
+    },
   })
 
   pool.on('error', (err: Error) => {
