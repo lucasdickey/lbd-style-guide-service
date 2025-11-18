@@ -5,9 +5,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server'
-import { query } from '@/lib/db'
+import { Pool } from 'pg'
 
 export async function POST(request: NextRequest) {
+  let pool: Pool | null = null
   try {
     // Validate initialization token
     const headerToken = request.headers.get('x-init-token')
@@ -27,49 +28,63 @@ export async function POST(request: NextRequest) {
 
     console.log('Starting migration: fixing embedding vector dimensions...')
 
-    // Step 1: Drop the old index that depends on the column
-    console.log('Dropping old embedding index...')
-    try {
-      await query('DROP INDEX IF EXISTS idx_samples_embedding')
-      console.log('Index dropped')
-    } catch (err) {
-      console.warn('Warning dropping index:', err)
-    }
-
-    // Step 2: Drop the old column
-    console.log('Dropping old embedding_vector column...')
-    try {
-      await query('ALTER TABLE samples DROP COLUMN IF EXISTS embedding_vector CASCADE')
-      console.log('Column dropped')
-    } catch (err) {
-      console.warn('Warning dropping column:', err)
-    }
-
-    // Step 3: Add new column with correct dimensions
-    console.log('Adding new embedding_vector column with 1536 dimensions...')
-    try {
-      await query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1536)')
-      console.log('New column added')
-    } catch (err) {
-      console.error('Error adding column:', err)
-      throw err
-    }
-
-    // Step 4: Recreate the index
-    console.log('Recreating embedding index...')
-    try {
-      await query('CREATE INDEX idx_samples_embedding ON samples USING ivfflat (embedding_vector vector_cosine_ops)')
-      console.log('Index recreated')
-    } catch (err) {
-      console.warn('Warning creating index:', err)
-    }
-
-    console.log('✓ Migration completed successfully')
-
-    return NextResponse.json({
-      status: 'success',
-      message: 'Embedding vector dimensions updated to 1536',
+    // Create direct connection with timeout
+    pool = new Pool({
+      connectionString: process.env.DATABASE_URL?.replace(/\?sslmode=.*/, ''),
+      max: 1,
+      idleTimeoutMillis: 30000,
+      connectionTimeoutMillis: 5000,
+      ssl: {
+        rejectUnauthorized: false,
+      },
     })
+
+    const client = await pool.connect()
+    try {
+      // Set statement timeout to 30 seconds
+      await client.query('SET statement_timeout = 30000')
+
+      // Step 1: Drop the old index that depends on the column
+      console.log('Dropping old embedding index...')
+      try {
+        await client.query('DROP INDEX IF EXISTS idx_samples_embedding')
+        console.log('Index dropped')
+      } catch (err) {
+        console.warn('Warning dropping index:', err)
+      }
+
+      // Step 2: Drop the old column
+      console.log('Dropping old embedding_vector column...')
+      try {
+        await client.query('ALTER TABLE samples DROP COLUMN IF EXISTS embedding_vector CASCADE')
+        console.log('Column dropped')
+      } catch (err) {
+        console.warn('Warning dropping column:', err)
+      }
+
+      // Step 3: Add new column with correct dimensions
+      console.log('Adding new embedding_vector column with 1536 dimensions...')
+      await client.query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1536)')
+      console.log('New column added')
+
+      // Step 4: Recreate the index
+      console.log('Recreating embedding index...')
+      try {
+        await client.query('CREATE INDEX idx_samples_embedding ON samples USING ivfflat (embedding_vector vector_cosine_ops)')
+        console.log('Index recreated')
+      } catch (err) {
+        console.warn('Warning creating index:', err)
+      }
+
+      console.log('✓ Migration completed successfully')
+
+      return NextResponse.json({
+        status: 'success',
+        message: 'Embedding vector dimensions updated to 1536',
+      })
+    } finally {
+      client.release()
+    }
   } catch (error) {
     console.error('Migration error:', error)
     return NextResponse.json(
@@ -79,5 +94,9 @@ export async function POST(request: NextRequest) {
       },
       { status: 500 }
     )
+  } finally {
+    if (pool) {
+      await pool.end()
+    }
   }
 }
