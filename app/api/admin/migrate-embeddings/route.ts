@@ -31,24 +31,35 @@ export async function POST(request: NextRequest) {
     console.log('Dropping old embedding index...')
     try {
       await query('DROP INDEX IF EXISTS idx_samples_embedding')
+      console.log('Index dropped')
     } catch (err) {
       console.warn('Warning dropping index:', err)
     }
 
-    // Step 2: Drop the old column and recreate with new dimensions
-    console.log('Recreating embedding_vector column with 1536 dimensions...')
+    // Step 2: Drop the old column
+    console.log('Dropping old embedding_vector column...')
     try {
-      await query('ALTER TABLE samples DROP COLUMN IF EXISTS embedding_vector')
+      await query('ALTER TABLE samples DROP COLUMN IF EXISTS embedding_vector CASCADE')
+      console.log('Column dropped')
     } catch (err) {
       console.warn('Warning dropping column:', err)
     }
 
-    await query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1536)')
+    // Step 3: Add new column with correct dimensions
+    console.log('Adding new embedding_vector column with 1536 dimensions...')
+    try {
+      await query('ALTER TABLE samples ADD COLUMN embedding_vector vector(1536)')
+      console.log('New column added')
+    } catch (err) {
+      console.error('Error adding column:', err)
+      throw err
+    }
 
-    // Step 3: Recreate the index with new dimensions
+    // Step 4: Recreate the index
     console.log('Recreating embedding index...')
     try {
       await query('CREATE INDEX idx_samples_embedding ON samples USING ivfflat (embedding_vector vector_cosine_ops)')
+      console.log('Index recreated')
     } catch (err) {
       console.warn('Warning creating index:', err)
     }
