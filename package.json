@@ -10,6 +10,7 @@
     "lint": "next lint",
     "db:init": "ts-node scripts/init-db.ts",
     "db:migrate": "ts-node scripts/migrate-add-modes.ts",
+    "db:migrate-dims": "ts-node scripts/migrate-fix-embedding-dims.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
