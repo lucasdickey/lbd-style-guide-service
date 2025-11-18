@@ -11,14 +11,20 @@ export async function initDB() {
   // Import dynamically to avoid issues during build
   const { Pool } = await import('pg')
 
+  // Parse the DATABASE_URL and ensure SSL is properly configured
+  const dbUrl = process.env.DATABASE_URL
+
   pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: dbUrl,
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-    ssl: {
-      rejectUnauthorized: false, // Accept self-signed certificates from RDS
-    },
+    // Only apply SSL config if not already in the connection string
+    ...(dbUrl && !dbUrl.includes('sslmode') ? {
+      ssl: {
+        rejectUnauthorized: false,
+      }
+    } : {}),
   })
 
   pool.on('error', (err: Error) => {
