@@ -96,11 +96,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Insert sample into database
+    // Format embedding vector for pgvector: convert array to bracket-delimited string "[val1,val2,...]"
+    const embeddingVectorForDb = embeddingVector ? `[${embeddingVector.join(',')}]` : null
+
     const sampleResult = await query(
       `INSERT INTO samples (user_id, type, url, context, tags, modes, embedding_vector)
        VALUES ($1, $2, $3, $4, $5, $6, $7)
        RETURNING *`,
-      [userId, sampleData.type, fileUrl, sampleData.context || null, sampleData.tags || [], sampleData.modes || [], embeddingVector ? JSON.stringify(embeddingVector) : null]
+      [userId, sampleData.type, fileUrl, sampleData.context || null, sampleData.tags || [], sampleData.modes || [], embeddingVectorForDb]
     )
 
     const sample = sampleResult.rows[0]
