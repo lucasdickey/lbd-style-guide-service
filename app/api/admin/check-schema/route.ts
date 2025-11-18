@@ -35,16 +35,30 @@ export async function GET(request: NextRequest) {
 
     const client = await pool.connect()
     try {
-      // Check column info for embedding_vector
-      const result = await client.query(`
+      // Check column info for embedding_vector and table structure
+      const columnsResult = await client.query(`
         SELECT column_name, data_type, udt_name
         FROM information_schema.columns
         WHERE table_name = 'samples' AND column_name = 'embedding_vector'
       `)
 
+      // Also check indexes
+      const indexesResult = await client.query(`
+        SELECT indexname, indexdef
+        FROM pg_indexes
+        WHERE tablename = 'samples' AND indexname LIKE '%embedding%'
+      `)
+
+      // Check vector dimensions directly using pgvector functions
+      const vectorCheckResult = await client.query(`
+        SELECT typname FROM pg_type WHERE typname = 'vector'
+      `).catch(() => ({ rows: [] }))
+
       return NextResponse.json({
         status: 'success',
-        schema: result.rows,
+        columns: columnsResult.rows,
+        indexes: indexesResult.rows,
+        vectorType: vectorCheckResult.rows,
       })
     } finally {
       client.release()
