@@ -1,6 +1,37 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+
+interface Sample {
+  id: string
+  type: string
+  url: string
+  tags: string[]
+  modes: string[]
+  context?: string
+  created_at: string
+}
+
+interface Profile {
+  id: string
+  name: string
+  persona_tags: string[]
+  default_tone: string
+  default_length: number
+  created_at: string
+  updated_at: string
+}
+
+const CONTENT_MODES = [
+  'Personal Blog',
+  'Work Blog',
+  'LinkedIn',
+  'Twitter',
+  'Email',
+  'Public Speaking',
+  'Interview',
+  'Code Comments',
+]
 
 export default function Dashboard() {
   const [file, setFile] = useState<File | null>(null)
@@ -8,9 +39,63 @@ export default function Dashboard() {
   const [content, setContent] = useState('')
   const [context, setContext] = useState('')
   const [tags, setTags] = useState('')
+  const [modes, setModes] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
+  const [samples, setSamples] = useState<Sample[]>([])
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loadingSamples, setLoadingSamples] = useState(false)
+  const [activeTab, setActiveTab] = useState<'upload' | 'samples' | 'profile'>('upload')
+
+  // Fetch profile and samples on mount
+  useEffect(() => {
+    fetchProfile()
+    fetchSamples()
+  }, [])
+
+  const fetchProfile = async () => {
+    try {
+      const response = await fetch('/api/twin/profile', {
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setProfile(data)
+      }
+    } catch (err) {
+      console.error('Failed to fetch profile:', err)
+    }
+  }
+
+  const fetchSamples = async () => {
+    setLoadingSamples(true)
+    try {
+      const response = await fetch('/api/twin/samples?limit=50', {
+        headers: {
+          'x-api-key': process.env.NEXT_PUBLIC_API_KEY || '',
+        },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        setSamples(data.samples || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch samples:', err)
+    } finally {
+      setLoadingSamples(false)
+    }
+  }
+
+  const handleModeToggle = (mode: string) => {
+    setModes(prev =>
+      prev.includes(mode)
+        ? prev.filter(m => m !== mode)
+        : [...prev, mode]
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -23,6 +108,7 @@ export default function Dashboard() {
       formData.append('type', sampleType)
       formData.append('context', context)
       formData.append('tags', JSON.stringify(tags.split(',').map(t => t.trim()).filter(t => t)))
+      formData.append('modes', JSON.stringify(modes))
 
       if (sampleType === 'text') {
         formData.append('content', content)
@@ -49,7 +135,11 @@ export default function Dashboard() {
       setContent('')
       setContext('')
       setTags('')
+      setModes([])
       setFile(null)
+
+      // Refresh samples list
+      fetchSamples()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error occurred')
     } finally {
@@ -59,98 +149,256 @@ export default function Dashboard() {
 
   return (
     <main className="min-h-screen p-8 bg-gray-50">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-4xl font-bold mb-8">Upload Sample</h1>
+      <div className="max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold mb-2">Style Guide Dashboard</h1>
+          <p className="text-gray-600">Manage your style guide samples and profile</p>
+        </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
-          {/* Sample Type */}
-          <div className="mb-6">
-            <label className="block text-lg font-semibold mb-2">Sample Type</label>
-            <select
-              value={sampleType}
-              onChange={(e) => setSampleType(e.target.value as any)}
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="text">Text</option>
-              <option value="audio">Audio</option>
-              <option value="video">Video</option>
-              <option value="image">Image</option>
-            </select>
-          </div>
-
-          {/* Text Content */}
-          {sampleType === 'text' && (
-            <div className="mb-6">
-              <label className="block text-lg font-semibold mb-2">Content</label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                placeholder="Paste your text content here..."
-                className="w-full border rounded-lg p-2 h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-          )}
-
-          {/* File Upload */}
-          {sampleType !== 'text' && (
-            <div className="mb-6">
-              <label className="block text-lg font-semibold mb-2">Upload File</label>
-              <input
-                type="file"
-                onChange={(e) => setFile(e.target.files?.[0] || null)}
-                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-          )}
-
-          {/* Context */}
-          <div className="mb-6">
-            <label className="block text-lg font-semibold mb-2">Context (Optional)</label>
-            <textarea
-              value={context}
-              onChange={(e) => setContext(e.target.value)}
-              placeholder="Describe the origin or context of this sample..."
-              className="w-full border rounded-lg p-2 h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Tags */}
-          <div className="mb-6">
-            <label className="block text-lg font-semibold mb-2">Tags (comma-separated)</label>
-            <input
-              type="text"
-              value={tags}
-              onChange={(e) => setTags(e.target.value)}
-              placeholder="e.g., technology, ai, analysis"
-              className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-              {error}
-            </div>
-          )}
-
-          {/* Success Message */}
-          {message && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
-              {message}
-            </div>
-          )}
-
-          {/* Submit Button */}
+        {/* Tabs */}
+        <div className="flex gap-4 mb-8 border-b border-gray-200">
           <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            onClick={() => setActiveTab('upload')}
+            className={`px-4 py-2 font-semibold transition ${
+              activeTab === 'upload'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
           >
-            {loading ? 'Uploading...' : 'Upload Sample'}
+            Upload Sample
           </button>
-        </form>
+          <button
+            onClick={() => setActiveTab('samples')}
+            className={`px-4 py-2 font-semibold transition ${
+              activeTab === 'samples'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            Samples ({samples.length})
+          </button>
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`px-4 py-2 font-semibold transition ${
+              activeTab === 'profile'
+                ? 'text-blue-600 border-b-2 border-blue-600'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            Profile
+          </button>
+        </div>
+
+        {/* Upload Tab */}
+        {activeTab === 'upload' && (
+          <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow-md p-8">
+            {/* Sample Type */}
+            <div className="mb-6">
+              <label className="block text-lg font-semibold mb-2">Sample Type</label>
+              <select
+                value={sampleType}
+                onChange={(e) => setSampleType(e.target.value as any)}
+                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="text">Text</option>
+                <option value="audio">Audio</option>
+                <option value="video">Video</option>
+                <option value="image">Image</option>
+              </select>
+            </div>
+
+            {/* Text Content */}
+            {sampleType === 'text' && (
+              <div className="mb-6">
+                <label className="block text-lg font-semibold mb-2">Content</label>
+                <textarea
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                  placeholder="Paste your text content here..."
+                  className="w-full border rounded-lg p-2 h-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+            )}
+
+            {/* File Upload */}
+            {sampleType !== 'text' && (
+              <div className="mb-6">
+                <label className="block text-lg font-semibold mb-2">Upload File</label>
+                <input
+                  type="file"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                  className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+                {file && <p className="text-sm text-gray-600 mt-2">Selected: {file.name}</p>}
+              </div>
+            )}
+
+            {/* Context */}
+            <div className="mb-6">
+              <label className="block text-lg font-semibold mb-2">Context (Optional)</label>
+              <textarea
+                value={context}
+                onChange={(e) => setContext(e.target.value)}
+                placeholder="Describe the origin or context of this sample..."
+                className="w-full border rounded-lg p-2 h-20 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Tags */}
+            <div className="mb-6">
+              <label className="block text-lg font-semibold mb-2">Tags (comma-separated)</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(e) => setTags(e.target.value)}
+                placeholder="e.g., technology, ai, analysis"
+                className="w-full border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {/* Content Modes */}
+            <div className="mb-6">
+              <label className="block text-lg font-semibold mb-3">Content Modes</label>
+              <div className="grid grid-cols-2 gap-2">
+                {CONTENT_MODES.map(mode => (
+                  <label key={mode} className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={modes.includes(mode)}
+                      onChange={() => handleModeToggle(mode)}
+                      className="w-4 h-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm">{mode}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                {error}
+              </div>
+            )}
+
+            {/* Success Message */}
+            {message && (
+              <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+                {message}
+              </div>
+            )}
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 transition"
+            >
+              {loading ? 'Uploading...' : 'Upload Sample'}
+            </button>
+          </form>
+        )}
+
+        {/* Samples Tab */}
+        {activeTab === 'samples' && (
+          <div className="bg-white rounded-lg shadow-md p-8">
+            {loadingSamples ? (
+              <div className="text-center py-8 text-gray-500">Loading samples...</div>
+            ) : samples.length === 0 ? (
+              <div className="text-center py-8 text-gray-500">No samples uploaded yet</div>
+            ) : (
+              <div className="space-y-4">
+                {samples.map(sample => (
+                  <div key={sample.id} className="border rounded-lg p-4 hover:bg-gray-50 transition">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {sample.type.toUpperCase()} · {new Date(sample.created_at).toLocaleDateString()}
+                        </p>
+                        {sample.context && (
+                          <p className="text-sm text-gray-600 mt-1">{sample.context}</p>
+                        )}
+                      </div>
+                    </div>
+                    {sample.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {sample.tags.map(tag => (
+                          <span
+                            key={tag}
+                            className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    {sample.modes.length > 0 && (
+                      <div className="flex flex-wrap gap-2">
+                        {sample.modes.map(mode => (
+                          <span
+                            key={mode}
+                            className="inline-block px-2 py-1 text-xs bg-green-100 text-green-700 rounded"
+                          >
+                            {mode}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400 mt-2">{sample.id}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Profile Tab */}
+        {activeTab === 'profile' && (
+          <div className="bg-white rounded-lg shadow-md p-8">
+            {profile ? (
+              <div className="space-y-6">
+                <div>
+                  <h2 className="text-2xl font-bold mb-4">{profile.name}</h2>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-gray-600 font-semibold">Default Tone</p>
+                      <p className="text-lg text-gray-800">{profile.default_tone}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600 font-semibold">Default Length</p>
+                      <p className="text-lg text-gray-800">{profile.default_length} words</p>
+                    </div>
+                  </div>
+                </div>
+
+                {profile.persona_tags.length > 0 && (
+                  <div>
+                    <p className="text-sm text-gray-600 font-semibold mb-2">Persona Tags</p>
+                    <div className="flex flex-wrap gap-2">
+                      {profile.persona_tags.map(tag => (
+                        <span
+                          key={tag}
+                          className="inline-block px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t text-sm text-gray-500">
+                  <p>Created: {new Date(profile.created_at).toLocaleDateString()}</p>
+                  <p>Last Updated: {new Date(profile.updated_at).toLocaleDateString()}</p>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">Loading profile...</div>
+            )}
+          </div>
+        )}
 
         {/* Back Link */}
         <div className="mt-8">
